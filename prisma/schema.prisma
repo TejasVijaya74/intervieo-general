@@ -1,0 +1,42 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+generator client {
+  provider = "prisma-client-js"
+}
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  sessions  InterviewSession[]
+}
+model InterviewSession {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  jobDescriptionText String   @db.Text
+  resumeText  String   @db.Text
+  vectorStore Json?
+  createdAt   DateTime @default(now())
+  messages    Message[]
+  report      AnalysisReport?
+}
+model Message {
+  id          String   @id @default(cuid())
+  sessionId   String
+  session     InterviewSession @relation(fields: [sessionId], references: [id])
+  text        String   @db.Text
+  isUser      Boolean
+  createdAt   DateTime @default(now())
+}
+model AnalysisReport {
+  id              String   @id @default(cuid())
+  sessionId       String   @unique
+  session         InterviewSession @relation(fields: [sessionId], references: [id])
+  pace            Float
+  clarityScore    Float
+  sentiment       String // We'll use a mock value for this
+  qualitativeFeedback String @db.Text
+  createdAt       DateTime @default(now())
+}
